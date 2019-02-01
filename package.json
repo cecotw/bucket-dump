@@ -1,6 +1,6 @@
 {
   "name": "bucket-dump",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Clones down all bitbucket repos in their associated project folder",
   "main": "index.js",
   "scripts": {
