@@ -16,6 +16,7 @@ $ npm i -g . // From project clone location
 ```
 ### CLI Options:
 
+  * -t, --team [team]  bitbucket team name
   * -a, --authentication [authentication]  bitbucket authentication in username:password format
 
 All commands are optional, as you will be automatically prompted for needed input.
