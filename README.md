@@ -1,6 +1,6 @@
 # Bucket Dump
 
-> Dumps out all the repos in Bitbucket to a local folder structure
+> Dumps out all the repos in Bitbucket to a local folder structure.
 > Can compress the whole structure for archiving
 
 ## Installation
