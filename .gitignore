@@ -1,0 +1,8 @@
+node_modules
+package-lock.json
+logs
+**/serve/run
+cachedDb
+!cachedDb/dummy
+.DS_Store
+package-lock.json
