@@ -37,10 +37,14 @@ const request = function (options) {
   });
 };
 
-function getProjects(credentials) {
+function getProjects(credentials, page) {
+  let url = `/2.0/teams/${team}/projects/`;
+  if (page) {
+    url += `?page=${page}`;
+  }
   const options = {
     host: 'api.bitbucket.org',
-    path: `/2.0/teams/${team}/projects/`,
+    path: url,
     method: 'GET',
     auth: `${credentials.username}:${credentials.password}`
   };
@@ -92,9 +96,18 @@ async function main() {
   }
   team = program.team || credentials.team;
   await mkDirInCwd(team);
+  let projects = [];
   const projectsRes = await getProjects(credentials);
-  for (let i = 0; i < projectsRes.values.length; i++) {
-    let project = projectsRes.values[i];
+  projects = projectsRes.values;
+  let numberOfPages = Math.ceil(projectsRes.size / projectsRes.pagelen);
+  while (numberOfPages > 1) {
+    const pageRes = await getProjects(credentials, numberOfPages);
+    numberOfPages--;
+    projects = projects.concat(pageRes.values);
+  }
+
+  for (let i = 0; i < projects.length; i++) {
+    let project = projects[i];
     await mkDirInCwd(`${team}/${project.name}`);
     const projectRes = await getProject(credentials, project.key);
     for (let j = 0; j < projectRes.values.length; j++) {
