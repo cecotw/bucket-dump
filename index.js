@@ -12,7 +12,7 @@ let team;
 program
   .option('-t, --team [team]', 'bitbucket team name')
   .option('-a, --authentication [authentication]', 'bitbucket authentication in username:password format')
-  // .option('-k, --key [key]', 'bitbucket project key')
+  // .option('-k, --key [key]', 'bitbucket project key') // TODO specify a key to get a specific project
   .parse(process.argv);
 
 const request = function (options) {
