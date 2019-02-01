@@ -5,6 +5,8 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const exec = require('child_process').exec;
+const spawn = require('child_process').spawn;
+
 let team;
 
 program
@@ -70,6 +72,20 @@ function mkDirInCwd(name) {
   });
 }
 
+function compress(name, path) {
+  var pathToArchive = `./${name}.tar.gz`;
+  var pathToFolder = path;
+
+  var tar = spawn('tar', ['czf', pathToArchive, pathToFolder]);
+  tar.on('exit', function (code) {
+    if (code === 0) {
+      console.log(colors.green(`Team code compressed: ${colors.grey(pathToArchive)}`));
+    } else {
+      console.log(colors.red(`Failed to compress folder. Check that you have the 'tar' utility installed.`));
+    }
+  });
+}
+
 async function main() {
   let credentials;
   if (program.authentication) {
@@ -118,6 +134,8 @@ async function main() {
       });
     }
   }
+
+  compress(team, path.join(process.cwd(), team));
 }
 
 main();
