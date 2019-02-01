@@ -9,6 +9,10 @@
   "bin": {
     "bucket-dump": "./bin/bucket-dump.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cecotw/bucket-dump.git"
+  },
   "preferGlobal": true,
   "author": "Tim White",
   "license": "ISC",
