@@ -6,3 +6,4 @@ cachedDb
 !cachedDb/dummy
 .DS_Store
 package-lock.json
+.npmrc
