@@ -5,9 +5,10 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const exec = require('child_process').exec;
-const team = 'talladega';
+let team;
 
 program
+  .option('-t, --team [team]', 'bitbucket team name')
   .option('-a, --authentication [authentication]', 'bitbucket authentication in username:password format')
   // .option('-k, --key [key]', 'bitbucket project key')
   .parse(process.argv);
@@ -58,8 +59,8 @@ function getProject(credentials, key) {
 
 function mkDirInCwd(name) {
   return new Promise((resolve) => {
-    fs.mkdir(path.join(process.cwd, name), (err) => {
-      if (err) throw err;
+    fs.mkdir(path.join(process.cwd(), name), (err) => {
+      if (err && err.code !== 'EEXIST') { throw err; }
       else resolve();
     });
   });
@@ -76,6 +77,11 @@ async function main() {
   } else {
     credentials = await inquirer.prompt([{
       type: 'input',
+      name: 'team',
+      message: 'Enter bitbucket team name',
+      when: () => { return !program.team; }
+    }, {
+      type: 'input',
       name: 'username',
       message: 'Enter bitbucket username'
     }, {
@@ -84,34 +90,21 @@ async function main() {
       message: 'Enter bitbucket password'
     }]);
   }
-
+  team = program.team || credentials.team;
+  await mkDirInCwd(team);
   const projectsRes = await getProjects(credentials);
-  await Promise.all(projectsRes.values.map(async project => {
-    console.log(project);
-    // await mkDirInCwd(project.name);
-    // const projectRes = await getProject(credentials, project.key);
-    // projectRes.values.forEach(async project => {
-    //   await exec(`git clone https://${credentials.username}@bitbucket.org/${project.full_name}.git`, { cwd: program.projectDirectory }, (err, stdout, stderr) => {
-    //     if (err) console.err(err);
-    //     console.log(colors.gray(stderr));
-    //   });
-    // });
-  }));
-  // const projectPrompt = await inquirer.prompt([{
-  //   type: 'list',
-  //   name: 'project',
-  //   message: 'Select project',
-  //   choices: projectsRes.values.map(p => {
-  //     return { name: p.name, value: p };
-  //   })
-  // }]);
-  // key = projectPrompt.project.key;
-  // const projectRes = await getProject(credentials, key);
-  // projectRes.values.forEach(async project => {
-  //   await exec(`git clone https://${credentials.username}@bitbucket.org/${project.full_name}.git`, { cwd: program.projectDirectory }, (err, stdout, stderr) => {
-  //     console.log(colors.gray(stderr));
-  //   });
-  // });
+  for (let i = 0; i < projectsRes.values.length; i++) {
+    let project = projectsRes.values[i];
+    await mkDirInCwd(`${team}/${project.name}`);
+    const projectRes = await getProject(credentials, project.key);
+    for (let j = 0; j < projectRes.values.length; j++) {
+      let repo = projectRes.values[j];
+      await exec(`git clone https://${credentials.username}@bitbucket.org/${repo.full_name}.git`, { cwd: path.join(process.cwd(), team, project.name) }, (err, stdout, stderr) => {
+        if (err) console.error(err);
+        console.log(colors.gray(stderr));
+      });
+    }
+  }
 }
 
 main();
