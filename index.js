@@ -129,7 +129,7 @@ async function main() {
     for (let j = 0; j < projectRes.values.length; j++) {
       let repo = projectRes.values[j];
       await exec(`git clone https://${credentials.username}@bitbucket.org/${repo.full_name}.git`, { cwd: path.join(process.cwd(), team, project.name) }, (err, stdout, stderr) => {
-        if (err) console.error(err);
+        if (err) console.error(colors.red(err));
         console.log(colors.gray(stderr));
       });
     }
