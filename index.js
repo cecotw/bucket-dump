@@ -7,6 +7,9 @@ const path = require('path');
 const exec = require('child_process').exec;
 const spawn = require('child_process').spawn;
 
+// Can be 10 to 100, https://developer.atlassian.com/bitbucket/api/2/reference/resource/teams
+const pagelen = 100;  
+
 let team;
 
 program
@@ -20,7 +23,7 @@ const request = function (options) {
     console.log(`${colors.green(options.method)} to: https://${options.host}${options.path}`);
     const req = https.request(options, (response) => {
       if (response.statusCode < 200 || response.statusCode > 299) {
-        reject(new Error('Failed to load page, status code: ' + response.statusCode));
+        reject(new Error('Failed to load page, status code: ' + response.statusCode)).catch(error => { console.log('caught an error: ' + error.message)});
       }
       const body = [];
       response.on('data', (chunk) => body.push(chunk));
@@ -53,10 +56,10 @@ function getProjects(credentials, page) {
   return request(options);
 }
 
-function getProject(credentials, key) {
+function getProject(credentials, key, pagelen) {
   const options = {
     host: 'api.bitbucket.org',
-    path: `/2.0/repositories/${team}?q=project.key="${key}"`,
+    path: `/2.0/repositories/${team}?q=project.key="${key}"&pagelen=${pagelen}`,
     method: 'GET',
     auth: `${credentials.username}:${credentials.password}`
   };
@@ -125,7 +128,7 @@ async function main() {
   for (let i = 0; i < projects.length; i++) {
     let project = projects[i];
     await mkDirInCwd(`${team}/${project.name}`);
-    const projectRes = await getProject(credentials, project.key);
+    const projectRes = await getProject(credentials, project.key, pagelen);
     for (let j = 0; j < projectRes.values.length; j++) {
       let repo = projectRes.values[j];
       await exec(`git clone https://${credentials.username}@bitbucket.org/${repo.full_name}.git`, { cwd: path.join(process.cwd(), team, project.name) }, (err, stdout, stderr) => {
